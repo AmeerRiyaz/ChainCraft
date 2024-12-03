@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Check for required arguments
+if [[ -z "$1" || -z "$2" ]]; then
+    echo "Usage: chaincraft --name <chaincode-name> --dir <target-directory>"
+    exit 1
+fi
+
+# Parse arguments
+NAME=""
+DIR=""
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --name) NAME="$2"; shift ;;
+        --dir) DIR="$2"; shift ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# Validate arguments
+if [[ -z "$NAME" || -z "$DIR" ]]; then
+    echo "Error: --name and --dir arguments are required."
+    exit 1
+fi
+
+# Define Docker image
+DOCKER_IMAGE="ameerriyaz/chaincraft:1.0"
+
+# Check if the image exists locally
+if ! docker image inspect "$DOCKER_IMAGE" > /dev/null 2>&1; then
+    echo "Docker image '$DOCKER_IMAGE' not found locally. Pulling from repository..."
+    if docker pull "$DOCKER_IMAGE"; then
+        echo "Docker image '$DOCKER_IMAGE' pulled successfully."
+    else
+        echo "Error: Failed to pull Docker image '$DOCKER_IMAGE'."
+        exit 1
+    fi
+else
+    echo "Docker image '$DOCKER_IMAGE' found locally."
+fi
+
+# Run the Docker command
+echo "Starting the Docker container..."
+docker run -it --rm \
+    -v "$(pwd)/chaincodes:$DIR" \
+    "$DOCKER_IMAGE" --name "$NAME" --dir "$DIR"
+
+# Check the exit status and log
+if [[ $? -eq 0 ]]; then
+    echo "Chaincode generation completed successfully."
+    echo "Generated files are available in: $(pwd)/chaincodes"
+else
+    echo "Error: Chaincode generation failed."
+    exit 1
+fi
