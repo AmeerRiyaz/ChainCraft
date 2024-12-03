@@ -1,7 +1,7 @@
 
 
 
-# Chaincode Generator
+# ChainCraft - Chaincode Generator
 
 A command-line tool for generating a structure for Hyperledger Fabric chaincode. This tool helps you easily create a customizable chaincode by defining various functions such as query, create, and history tracking.
 
